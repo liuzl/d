@@ -3,6 +3,8 @@ package d
 import (
 	"fmt"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/liuzl/store"
 )
@@ -80,6 +82,8 @@ func (d *Dictionary) Replace(k string, values Values) error {
 		d.cedar.SafeDelete([]byte(k))
 		return err
 	}
+	atomic.AddInt64(&d.changed, 1)
+	atomic.StoreInt64(&d.updated, time.Now().Unix())
 	return nil
 }
 
@@ -90,5 +94,7 @@ func (d *Dictionary) Delete(k string) error {
 	if err := d.cedar.SafeDelete([]byte(k)); err != nil {
 		return err
 	}
+	atomic.AddInt64(&d.changed, 1)
+	atomic.StoreInt64(&d.updated, time.Now().Unix())
 	return d.kv.Delete(k)
 }

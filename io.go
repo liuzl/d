@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 
 	"github.com/cheggaaa/pb"
 	"github.com/liuzl/dict"
@@ -35,13 +36,19 @@ func Load(dir string) (*Dictionary, error) {
 	} else if !os.IsNotExist(err) {
 		return nil, err
 	}
-	d := &Dictionary{dir, kv, cedar}
+	d := &Dictionary{dir: dir, kv: kv, cedar: cedar}
+	go d.sync()
 	return d, nil
 }
 
 func (d *Dictionary) Save() error {
 	cedarDir := filepath.Join(d.dir, "cedar")
-	return d.cedar.SaveToFile(cedarDir, "gob")
+	if err := d.cedar.SaveToFile(cedarDir, "gob"); err != nil {
+		return err
+	}
+	atomic.StoreInt64(&d.changed, 0)
+	atomic.StoreInt64(&d.updated, 0)
+	return nil
 }
 
 func (d *Dictionary) Dump(path string) error {
