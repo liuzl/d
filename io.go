@@ -98,7 +98,7 @@ func Build(src, dst string) (*Dictionary, error) {
 		if err = json.Unmarshal(b, &rec); err != nil {
 			return nil, err
 		}
-		if err = d.Insert(rec.K, rec.V); err != nil {
+		if err = d.Update(rec.K, rec.V); err != nil {
 			return nil, err
 		}
 		bar.Increment()

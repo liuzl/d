@@ -5,12 +5,7 @@ import (
 	"github.com/liuzl/store"
 )
 
-type DictValue struct {
-	Type  string      `json:"type"`
-	Value interface{} `json:"value"`
-}
-
-type Values []*DictValue
+type Values map[string]interface{}
 
 type Dictionary struct {
 	dir   string

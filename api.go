@@ -2,6 +2,7 @@ package d
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/liuzl/store"
 )
@@ -35,17 +36,55 @@ func (d *Dictionary) PrefixMatch(text string) (map[string]Values, error) {
 	return ret, nil
 }
 
-func (d *Dictionary) Insert(k string, v Values) error {
-	if v == nil || len(v) == 0 {
-		return fmt.Errorf("nil value")
+func (d *Dictionary) Update(k string, values Values) error {
+	if k = strings.TrimSpace(k); k == "" {
+		return fmt.Errorf("empty key")
 	}
-	if err := d.cedar.SafeInsert([]byte(k), len(v)); err != nil {
+	if values == nil || len(values) == 0 {
+		return fmt.Errorf("nil values")
+	}
+
+	b, err := d.kv.Get(k)
+	old := make(Values)
+	if err == nil {
+		if err = store.BytesToObject(b, old); err != nil {
+			return err
+		}
+	} else if err.Error() != "leveldb: not found" {
 		return err
 	}
-	b, err := store.ObjectToBytes(v)
-	if err != nil {
+	for k, v := range values {
+		old[k] = v
+	}
+	return d.Replace(k, old)
+}
+
+func (d *Dictionary) Replace(k string, values Values) error {
+	if k = strings.TrimSpace(k); k == "" {
+		return fmt.Errorf("empty key")
+	}
+	if values == nil || len(values) == 0 {
+		return fmt.Errorf("nil values")
+	}
+
+	var b []byte
+	var err error
+	if err = d.cedar.SafeInsert([]byte(k), len(values)); err != nil {
+		return err
+	}
+	if b, err = store.ObjectToBytes(values); err != nil {
 		d.cedar.SafeDelete([]byte(k))
 		return err
 	}
 	return d.kv.Put(k, b)
+}
+
+func (d *Dictionary) Delete(k string) error {
+	if k = strings.TrimSpace(k); k == "" {
+		return fmt.Errorf("empty key")
+	}
+	if err := d.cedar.SafeDelete([]byte(k)); err != nil {
+		return err
+	}
+	return d.kv.Delete(k)
 }
