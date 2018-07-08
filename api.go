@@ -76,7 +76,11 @@ func (d *Dictionary) Replace(k string, values Values) error {
 		d.cedar.SafeDelete([]byte(k))
 		return err
 	}
-	return d.kv.Put(k, b)
+	if err = d.kv.Put(k, b); err != nil {
+		d.cedar.SafeDelete([]byte(k))
+		return err
+	}
+	return nil
 }
 
 func (d *Dictionary) Delete(k string) error {
