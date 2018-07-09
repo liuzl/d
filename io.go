@@ -37,7 +37,7 @@ func Load(dir string) (*Dictionary, error) {
 		return nil, err
 	}
 	d := &Dictionary{dir: dir, kv: kv, cedar: cedar}
-	go d.sync()
+	go d.flush()
 	return d, nil
 }
 
