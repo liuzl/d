@@ -8,7 +8,7 @@ import (
 	"github.com/liuzl/goutil/rest"
 )
 
-func (d *Dictionary) Register() {
+func (d *Dictionary) RegisterWeb() {
 	http.Handle("/api/get", rest.WithLog(d.GetHandler))
 	http.Handle("/api/match", rest.WithLog(d.PrefixMatchHandler))
 	http.Handle("/api/update", rest.WithLog(d.UpdateHandler))

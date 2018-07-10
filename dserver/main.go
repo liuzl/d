@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 
 	"github.com/liuzl/d"
 )
@@ -18,4 +19,6 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println(dict)
+	dict.RegisterWeb()
+	http.ListenAndServe(":8080", nil)
 }
