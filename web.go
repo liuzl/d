@@ -8,6 +8,12 @@ import (
 	"github.com/liuzl/goutil/rest"
 )
 
+func (d *Dictionary) Register() {
+	http.Handle("/api/get", rest.WithLog(d.GetHandler))
+	http.Handle("/api/match", rest.WithLog(d.PrefixMatchHandler))
+	http.Handle("/api/update", rest.WithLog(d.UpdateHandler))
+}
+
 func (d *Dictionary) GetHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	word := strings.TrimSpace(r.FormValue("word"))
