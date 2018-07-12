@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	dir  = flag.String("dir", "data", "data dir")
+	dir  = flag.String("dir", "dict", "dict data dir")
 	addr = flag.String("addr", ":8080", "band address")
 )
 
@@ -24,6 +24,6 @@ func main() {
 
 	dict.RegisterWeb()
 
-	glog.Info("dserver listen on", *addr)
+	glog.Info("dserver listen on ", *addr)
 	glog.Error(http.ListenAndServe(":8080", nil))
 }
