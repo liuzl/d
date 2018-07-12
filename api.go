@@ -9,20 +9,20 @@ import (
 	"github.com/liuzl/store"
 )
 
-func (d *Dictionary) Get(key string) (Values, error) {
+func (d *Dictionary) Get(key string) (map[string]interface{}, error) {
 	b, err := d.kv.Get(key)
 	if err != nil {
 		return nil, err
 	}
-	var v Values
+	var v map[string]interface{}
 	if err = store.BytesToObject(b, &v); err != nil {
 		return nil, err
 	}
 	return v, nil
 }
 
-func (d *Dictionary) PrefixMatch(text string) (map[string]Values, error) {
-	ret := make(map[string]Values)
+func (d *Dictionary) PrefixMatch(text string) (map[string]map[string]interface{}, error) {
+	ret := make(map[string]map[string]interface{})
 	for _, id := range d.cedar.PrefixMatch([]byte(text), 0) {
 		key, err := d.cedar.Key(id)
 		if err != nil {
@@ -38,7 +38,7 @@ func (d *Dictionary) PrefixMatch(text string) (map[string]Values, error) {
 	return ret, nil
 }
 
-func (d *Dictionary) Update(k string, values Values) error {
+func (d *Dictionary) Update(k string, values map[string]interface{}) error {
 	if k = strings.TrimSpace(k); k == "" {
 		return fmt.Errorf("empty key")
 	}
@@ -47,7 +47,7 @@ func (d *Dictionary) Update(k string, values Values) error {
 	}
 
 	b, err := d.kv.Get(k)
-	old := make(Values)
+	old := make(map[string]interface{})
 	if err == nil {
 		if err = store.BytesToObject(b, &old); err != nil {
 			return err
@@ -61,7 +61,7 @@ func (d *Dictionary) Update(k string, values Values) error {
 	return d.Replace(k, old)
 }
 
-func (d *Dictionary) Replace(k string, values Values) error {
+func (d *Dictionary) Replace(k string, values map[string]interface{}) error {
 	if k = strings.TrimSpace(k); k == "" {
 		return fmt.Errorf("empty key")
 	}

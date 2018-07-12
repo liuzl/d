@@ -39,6 +39,7 @@ func (d *Dictionary) PrefixMatchHandler(w http.ResponseWriter, r *http.Request) 
 func (d *Dictionary) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	replace := strings.TrimSpace(r.FormValue("replace"))
+	flush := strings.TrimSpace(r.FormValue("flush"))
 	data := strings.TrimSpace(r.FormValue("json"))
 	var rec Record
 	if err := json.Unmarshal([]byte(data), &rec); err != nil {
@@ -52,6 +53,12 @@ func (d *Dictionary) UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if err := f(rec.K, rec.V); err != nil {
 		rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
 		return
+	}
+	if flush != "" {
+		if err := d.Save(); err != nil {
+			rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
+			return
+		}
 	}
 	rest.MustEncode(w, &rest.RestMessage{"OK", "done"})
 }

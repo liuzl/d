@@ -16,8 +16,8 @@ import (
 )
 
 type Record struct {
-	K string `json:"k"`
-	V Values `json:"v"`
+	K string                 `json:"k"`
+	V map[string]interface{} `json:"v"`
 }
 
 func Load(dir string) (*Dictionary, error) {
@@ -43,6 +43,7 @@ func Load(dir string) (*Dictionary, error) {
 
 func (d *Dictionary) Save() error {
 	cedarDir := filepath.Join(d.dir, "cedar")
+	fmt.Println(cedarDir, "saving")
 	if err := d.cedar.SaveToFile(cedarDir, "gob"); err != nil {
 		return err
 	}
@@ -58,7 +59,7 @@ func (d *Dictionary) Dump(path string) error {
 	}
 	defer wf.Close()
 	err = d.kv.ForEach(nil, func(key, value []byte) (bool, error) {
-		var v Values
+		var v map[string]interface{}
 		if err := store.BytesToObject(value, &v); err != nil {
 			return false, err
 		}
