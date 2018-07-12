@@ -49,7 +49,7 @@ func (d *Dictionary) Update(k string, values Values) error {
 	b, err := d.kv.Get(k)
 	old := make(Values)
 	if err == nil {
-		if err = store.BytesToObject(b, old); err != nil {
+		if err = store.BytesToObject(b, &old); err != nil {
 			return err
 		}
 	} else if err.Error() != "leveldb: not found" {
