@@ -9,6 +9,16 @@ import (
 	"github.com/liuzl/store"
 )
 
+type Pos struct {
+	Start int `json:"start"`
+	End   int `json:"end"`
+}
+
+type Matches struct {
+	Value map[string]interface{} `json:"value"`
+	Hits  []*Pos                 `json:"hits"`
+}
+
 func (d *Dictionary) Get(key string) (map[string]interface{}, error) {
 	b, err := d.kv.Get(key)
 	if err != nil {
@@ -21,7 +31,9 @@ func (d *Dictionary) Get(key string) (map[string]interface{}, error) {
 	return v, nil
 }
 
-func (d *Dictionary) PrefixMatch(text string) (map[string]map[string]interface{}, error) {
+func (d *Dictionary) PrefixMatch(text string) (
+	map[string]map[string]interface{}, error) {
+
 	ret := make(map[string]map[string]interface{})
 	for _, id := range d.cedar.PrefixMatch([]byte(text), 0) {
 		key, err := d.cedar.Key(id)
@@ -34,6 +46,25 @@ func (d *Dictionary) PrefixMatch(text string) (map[string]map[string]interface{}
 			return nil, err
 		}
 		ret[word] = v
+	}
+	return ret, nil
+}
+
+func (d *Dictionary) MultiMatch(text string) (map[string]*Matches, error) {
+	r := []rune(text)
+	ret := make(map[string]*Matches)
+	for i := 0; i < len(r); i++ {
+		start := len(string(r[:i]))
+		hit, err := d.PrefixMatch(string(r[i:]))
+		if err != nil {
+			return nil, err
+		}
+		for k, v := range hit {
+			if ret[k] == nil {
+				ret[k] = &Matches{v, nil}
+			}
+			ret[k].Hits = append(ret[k].Hits, &Pos{start, start + len(k)})
+		}
 	}
 	return ret, nil
 }

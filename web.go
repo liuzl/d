@@ -11,6 +11,7 @@ import (
 func (d *Dictionary) RegisterWeb() {
 	http.Handle("/api/get", rest.WithLog(d.GetHandler))
 	http.Handle("/api/match", rest.WithLog(d.PrefixMatchHandler))
+	http.Handle("/api/multimatch", rest.WithLog(d.MultiMatchHandler))
 	http.Handle("/api/update", rest.WithLog(d.UpdateHandler))
 }
 
@@ -29,6 +30,17 @@ func (d *Dictionary) PrefixMatchHandler(w http.ResponseWriter, r *http.Request) 
 	r.ParseForm()
 	text := strings.TrimSpace(r.FormValue("text"))
 	ret, err := d.PrefixMatch(text)
+	if err != nil {
+		rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
+		return
+	}
+	rest.MustEncode(w, &rest.RestMessage{"OK", ret})
+}
+
+func (d *Dictionary) MultiMatchHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	text := strings.TrimSpace(r.FormValue("text"))
+	ret, err := d.MultiMatch(text)
 	if err != nil {
 		rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
 		return
