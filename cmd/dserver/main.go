@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	dir  = flag.String("dir", "dict", "dict data dir")
+	name = flag.String("name", "dict", "dict name")
 	addr = flag.String("addr", ":8080", "band address")
 )
 
@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 	defer glog.Flush()
 
-	dict, err := d.Load(*dir)
+	dict, err := d.Load(*name)
 	if err != nil {
 		glog.Fatal(err)
 	}

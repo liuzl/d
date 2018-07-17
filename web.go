@@ -2,6 +2,7 @@ package d
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -9,10 +10,13 @@ import (
 )
 
 func (d *Dictionary) RegisterWeb() {
-	http.Handle("/api/get", rest.WithLog(d.GetHandler))
-	http.Handle("/api/match", rest.WithLog(d.PrefixMatchHandler))
-	http.Handle("/api/multimatch", rest.WithLog(d.MultiMatchHandler))
-	http.Handle("/api/update", rest.WithLog(d.UpdateHandler))
+	http.Handle(fmt.Sprintf("/%s/get", d.Name), rest.WithLog(d.GetHandler))
+	http.Handle(fmt.Sprintf("/%s/match", d.Name),
+		rest.WithLog(d.PrefixMatchHandler))
+	http.Handle(fmt.Sprintf("/%s/multimatch", d.Name),
+		rest.WithLog(d.MultiMatchHandler))
+	http.Handle(fmt.Sprintf("/%s/update", d.Name),
+		rest.WithLog(d.UpdateHandler))
 }
 
 func (d *Dictionary) GetHandler(w http.ResponseWriter, r *http.Request) {

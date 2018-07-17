@@ -3,6 +3,7 @@ package d
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -15,14 +16,18 @@ import (
 	"github.com/liuzl/store"
 )
 
+var (
+	dir = flag.String("dict_dir", "dicts", "dir for dicts")
+)
+
 type Record struct {
 	K string                 `json:"k"`
 	V map[string]interface{} `json:"v"`
 }
 
-func Load(dir string) (*Dictionary, error) {
-	kvDir := filepath.Join(dir, "kv")
-	cedarDir := filepath.Join(dir, "cedar")
+func Load(name string) (*Dictionary, error) {
+	kvDir := filepath.Join(*dir, name, "kv")
+	cedarDir := filepath.Join(*dir, name, "cedar")
 	kv, err := store.NewLevelStore(kvDir)
 	if err != nil {
 		return nil, err
@@ -36,13 +41,13 @@ func Load(dir string) (*Dictionary, error) {
 	} else if !os.IsNotExist(err) {
 		return nil, err
 	}
-	d := &Dictionary{dir: dir, kv: kv, cedar: cedar}
+	d := &Dictionary{Name: name, kv: kv, cedar: cedar}
 	go d.flush()
 	return d, nil
 }
 
 func (d *Dictionary) Save() error {
-	cedarDir := filepath.Join(d.dir, "cedar")
+	cedarDir := filepath.Join(*dir, d.Name, "cedar")
 	fmt.Println(cedarDir, "saving")
 	if err := d.cedar.SaveToFile(cedarDir, "gob"); err != nil {
 		return err

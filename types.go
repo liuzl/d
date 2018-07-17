@@ -6,7 +6,7 @@ import (
 )
 
 type Dictionary struct {
-	dir   string
+	Name  string
 	kv    *store.LevelStore
 	cedar *dict.Cedar
 
