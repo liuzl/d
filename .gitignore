@@ -14,3 +14,5 @@
 dict
 zerolog
 zlog
+
+cmd/dserver/dserver
