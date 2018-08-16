@@ -62,9 +62,22 @@ func main() {
 				} else {
 					switch value[*tag].(type) {
 					case string:
-						value[*tag] = []string{value[*tag].(string), record[1]}
+						former := value[*tag].(string)
+						if former != record[1] {
+							value[*tag] = []string{former, record[1]}
+						}
 					case []string:
-						value[*tag] = append(value[*tag].([]string), record[1])
+						former := value[*tag].([]string)
+						dup := false
+						for _, v := range former {
+							if v == record[1] {
+								dup = true
+								break
+							}
+						}
+						if !dup {
+							value[*tag] = append(former, record[1])
+						}
 					default:
 						log.Println("ERROR type")
 					}
