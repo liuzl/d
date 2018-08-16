@@ -46,13 +46,16 @@ func main() {
 		} else if err != nil {
 			errors = append(errors, err)
 		} else {
+			save := false
 			value, err := dict.Get(record[0])
 			if err == nil {
 				if _, has := value[*tag]; !has {
 					value[*tag] = nil
+					save = true
 				}
 			} else if err.Error() == "leveldb: not found" {
 				value = map[string]interface{}{*tag: nil}
+				save = true
 			} else {
 				log.Fatal(err)
 			}
@@ -65,6 +68,7 @@ func main() {
 						former := value[*tag].(string)
 						if former != record[1] {
 							value[*tag] = []string{former, record[1]}
+							save = true
 						}
 					case []string:
 						former := value[*tag].([]string)
@@ -77,14 +81,17 @@ func main() {
 						}
 						if !dup {
 							value[*tag] = append(former, record[1])
+							save = true
 						}
 					default:
 						log.Println("ERROR type")
 					}
 				}
 			}
-			if err = dict.Update(record[0], value); err != nil {
-				log.Fatal(err)
+			if save {
+				if err = dict.Update(record[0], value); err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 		bar.Increment()
