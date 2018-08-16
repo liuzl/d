@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bufio"
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	src = flag.String("src", "dict.txt", "dictionary source file")
+	src = flag.String("src", "dict.csv", "dictionary source csv file,")
 	dst = flag.String("dst", "dict", "destination dir")
 	tag = flag.String("tag", "tag", "word type of this dict")
 )
@@ -34,20 +34,55 @@ func main() {
 	}
 	fd, _ := os.Open(*src)
 	defer fd.Close()
-	br := bufio.NewReader(fd)
+
+	r := csv.NewReader(fd)
+	r.FieldsPerRecord = -1
+
+	var errors []error
 	bar := pb.StartNew(count)
-	value := map[string]interface{}{*tag: nil}
 	for {
-		word, c := br.ReadString('\n')
-		if c == io.EOF {
+		if record, err := r.Read(); err == io.EOF {
 			break
-		}
-		if err = dict.Update(word, value); err != nil {
-			log.Fatal(err)
+		} else if err != nil {
+			errors = append(errors, err)
+		} else {
+			value, err := dict.Get(record[0])
+			if err == nil {
+				if _, has := value[*tag]; !has {
+					value[*tag] = nil
+				}
+			} else if err.Error() == "leveldb: not found" {
+				value = map[string]interface{}{*tag: nil}
+			} else {
+				log.Fatal(err)
+			}
+			if len(record) >= 2 && record[1] != record[0] {
+				if value[*tag] == nil {
+					value[*tag] = record[1]
+				} else {
+					switch value[*tag].(type) {
+					case string:
+						value[*tag] = []string{value[*tag].(string), record[1]}
+					case []string:
+						value[*tag] = append(value[*tag].([]string), record[1])
+					default:
+						log.Println("ERROR type")
+					}
+				}
+			}
+			if err = dict.Update(record[0], value); err != nil {
+				log.Fatal(err)
+			}
 		}
 		bar.Increment()
 	}
 	bar.FinishPrint("done!")
+	if len(errors) > 0 {
+		log.Printf("%d errors:\n", len(errors))
+		for _, err := range errors {
+			log.Println(err)
+		}
+	}
 	if err = dict.Save(); err != nil {
 		log.Fatal(err)
 	}
