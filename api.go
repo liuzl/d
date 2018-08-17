@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/liuzl/store"
+	"github.com/mitchellh/hashstructure"
 )
 
 type Pos struct {
@@ -17,6 +18,16 @@ type Pos struct {
 type Matches struct {
 	Value map[string]interface{} `json:"value"`
 	Hits  []*Pos                 `json:"hits"`
+}
+
+type wordValue struct {
+	typ string
+	val interface{}
+}
+
+type pair struct {
+	word  string
+	value *wordValue
 }
 
 func (d *Dictionary) Get(key string) (map[string]interface{}, error) {
@@ -34,7 +45,7 @@ func (d *Dictionary) Get(key string) (map[string]interface{}, error) {
 func (d *Dictionary) PrefixMatch(text string) (
 	map[string]map[string]interface{}, error) {
 
-	ret := make(map[string]map[string]interface{})
+	set := make(map[uint64]*pair)
 	for _, id := range d.cedar.PrefixMatch([]byte(text), 0) {
 		key, err := d.cedar.Key(id)
 		if err != nil {
@@ -45,7 +56,18 @@ func (d *Dictionary) PrefixMatch(text string) (
 		if err != nil {
 			return nil, err
 		}
-		ret[word] = v
+		// type of v is map[string]interface{}
+		for typ, val := range v {
+			wv := &wordValue{typ, val}
+			key, _ := hashstructure.Hash(wv, nil)
+			if set[key] == nil || len(word) > len(set[key].word) {
+				set[key] = &pair{word, wv}
+			}
+		}
+	}
+	ret := make(map[string]map[string]interface{})
+	for _, item := range set {
+		ret[item.word] = map[string]interface{}{item.value.typ: item.value.val}
 	}
 	return ret, nil
 }
