@@ -61,26 +61,20 @@ func main() {
 			}
 			if len(record) >= 2 && record[1] != record[0] {
 				if value[*tag] == nil {
-					value[*tag] = record[1]
+					value[*tag] = []string{record[1]}
 				} else {
 					switch value[*tag].(type) {
-					case string:
-						former := value[*tag].(string)
-						if former != record[1] {
-							value[*tag] = []string{former, record[1]}
-							save = true
-						}
 					case []string:
-						former := value[*tag].([]string)
+						values := value[*tag].([]string)
 						dup := false
-						for _, v := range former {
+						for _, v := range values {
 							if v == record[1] {
 								dup = true
 								break
 							}
 						}
 						if !dup {
-							value[*tag] = append(former, record[1])
+							value[*tag] = append(values, record[1])
 							save = true
 						}
 					default:
