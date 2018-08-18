@@ -21,8 +21,8 @@ type Matches struct {
 }
 
 type wordValue struct {
-	typ string
-	val interface{}
+	Typ string
+	Val interface{}
 }
 
 type pair struct {
@@ -67,7 +67,11 @@ func (d *Dictionary) PrefixMatch(text string) (
 	}
 	ret := make(map[string]map[string]interface{})
 	for _, item := range set {
-		ret[item.word] = map[string]interface{}{item.value.typ: item.value.val}
+		if ret[item.word] == nil {
+			ret[item.word] = map[string]interface{}{item.value.Typ: item.value.Val}
+		} else {
+			ret[item.word][item.value.Typ] = item.value.Val
+		}
 	}
 	return ret, nil
 }
