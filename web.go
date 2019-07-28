@@ -15,6 +15,8 @@ func (d *Dictionary) RegisterWeb() {
 		rest.WithLog(d.PrefixMatchHandler))
 	http.Handle(fmt.Sprintf("/%s/multimatch", d.Name),
 		rest.WithLog(d.MultiMatchHandler))
+	http.Handle(fmt.Sprintf("/%s/multimaxmatch", d.Name),
+		rest.WithLog(d.MultiMaxMatchHandler))
 	http.Handle(fmt.Sprintf("/%s/update", d.Name),
 		rest.WithLog(d.UpdateHandler))
 }
@@ -45,6 +47,17 @@ func (d *Dictionary) MultiMatchHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	text := strings.TrimSpace(r.FormValue("text"))
 	ret, err := d.MultiMatch(text)
+	if err != nil {
+		rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
+		return
+	}
+	rest.MustEncode(w, &rest.RestMessage{"OK", ret})
+}
+
+func (d *Dictionary) MultiMaxMatchHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	text := strings.TrimSpace(r.FormValue("text"))
+	ret, err := d.MultiMaxMatch(text)
 	if err != nil {
 		rest.MustEncode(w, &rest.RestMessage{"ERROR", err.Error()})
 		return

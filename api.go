@@ -95,6 +95,34 @@ func (d *Dictionary) MultiMatch(text string) (map[string]*Matches, error) {
 	return ret, nil
 }
 
+func (d *Dictionary) MultiMaxMatch(text string) (map[string]*Matches, error) {
+	r := []rune(text)
+	ret := make(map[string]*Matches)
+	for i := 0; i < len(r); {
+		start := len(string(r[:i]))
+		hit, err := d.PrefixMatch(string(r[i:]))
+		if err != nil {
+			return nil, err
+		}
+		if len(hit) == 0 {
+			i++
+			continue
+		}
+		k := ""
+		for key, _ := range hit {
+			if len(key) > len(k) {
+				k = key
+			}
+		}
+		if ret[k] == nil {
+			ret[k] = &Matches{hit[k], nil}
+		}
+		ret[k].Hits = append(ret[k].Hits, &Pos{start, start + len(k)})
+		i += len([]rune(k))
+	}
+	return ret, nil
+}
+
 func (d *Dictionary) Update(k string, values map[string]interface{}) error {
 	if k = strings.TrimSpace(k); k == "" {
 		return fmt.Errorf("empty key")
