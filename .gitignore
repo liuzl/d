@@ -16,3 +16,6 @@ zerolog
 zlog
 
 cmd/dserver/dserver
+cmd/csv2dict/csv2dict
+
+*.swp
