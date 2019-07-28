@@ -84,7 +84,7 @@ func main() {
 			}
 			if save {
 				if err = dict.Update(record[0], value); err != nil {
-					glog.Fatal(err)
+					glog.Fatalf("%+v, %+v", record, err)
 				}
 			}
 		}
