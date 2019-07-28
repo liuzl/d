@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/cheggaaa/pb"
+	"github.com/golang/glog"
 	"github.com/liuzl/d"
 	"github.com/liuzl/goutil"
 )
@@ -23,14 +23,14 @@ func main() {
 	flag.Parse()
 	count, err := goutil.FileLineCount(*src)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	if count <= 0 {
-		log.Fatal(fmt.Errorf("empty src file: %s", *src))
+		glog.Fatal(fmt.Errorf("empty src file: %s", *src))
 	}
 	dict, err := d.Load(*dst)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	fd, _ := os.Open(*src)
 	defer fd.Close()
@@ -57,7 +57,7 @@ func main() {
 				value = map[string]interface{}{*tag: nil}
 				save = true
 			} else {
-				log.Fatal(err)
+				glog.Fatal(err)
 			}
 			if len(record) >= 2 && record[1] != record[0] {
 				if value[*tag] == nil {
@@ -78,13 +78,13 @@ func main() {
 							save = true
 						}
 					default:
-						log.Println("ERROR type")
+						glog.Error("ERROR type")
 					}
 				}
 			}
 			if save {
 				if err = dict.Update(record[0], value); err != nil {
-					log.Fatal(err)
+					glog.Fatal(err)
 				}
 			}
 		}
@@ -92,12 +92,12 @@ func main() {
 	}
 	bar.FinishPrint("done!")
 	if len(errors) > 0 {
-		log.Printf("%d errors:\n", len(errors))
+		glog.Errorf("%d errors:\n", len(errors))
 		for _, err := range errors {
-			log.Println(err)
+			glog.Error(err)
 		}
 	}
 	if err = dict.Save(); err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 }
