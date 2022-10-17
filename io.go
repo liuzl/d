@@ -12,8 +12,8 @@ import (
 
 	"github.com/cheggaaa/pb"
 	"github.com/liuzl/dict"
-	"github.com/liuzl/goutil"
 	"github.com/liuzl/store"
+	"zliu.org/goutil"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/liuzl/goutil/rest"
+	"zliu.org/goutil/rest"
 )
 
 func (d *Dictionary) RegisterWeb() {

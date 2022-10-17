@@ -10,7 +10,7 @@ import (
 	"github.com/cheggaaa/pb"
 	"github.com/golang/glog"
 	"github.com/liuzl/d"
-	"github.com/liuzl/goutil"
+	"zliu.org/goutil"
 )
 
 var (
